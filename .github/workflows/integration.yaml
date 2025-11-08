@@ -43,6 +43,10 @@ jobs:
 
           if [ "${#target_file_list[@]}" -gt 0 ]; then
             echo -e "\n자동 수정된 파일 수: ${#target_file_list[@]}" >> "$GITHUB_STEP_SUMMARY"
+            
+            # 유저 설정
+            git config user.name "${{ github.actor }}"
+            git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
 
             # 변경분 커밋 & 푸시
             git add "${fixed_list[@]}"
