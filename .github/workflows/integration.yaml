@@ -46,11 +46,11 @@ jobs:
             echo -e "\n자동 수정된 파일 수: ${#target_file_list[@]}" >> "$GITHUB_STEP_SUMMARY"
             
             # 유저 설정
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "${GITHUB_ACTOR}"
+            git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
             # 변경분 커밋 & 푸시
-            git add "${fixed_list[@]}"
+            git add -A
             git commit -m "chore(ci): add missing trailing newline to files"
             git push
 
