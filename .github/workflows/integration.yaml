@@ -32,7 +32,8 @@ jobs:
           for file in $files; do
             echo "검사 중: $file"
             if [ -s "$file" ] && [ "$(tail -c 1 $file | wc -l)" -eq 0 ]; then
-              printf '\n' >> "$file"
+              # 개행 추가
+              echo >> "$file"
               echo "✏️ 개행 추가: $file"
               echo "- $file" >> $GITHUB_STEP_SUMMARY
               target_file_list+=("$file")
@@ -45,8 +46,8 @@ jobs:
             echo -e "\n자동 수정된 파일 수: ${#target_file_list[@]}" >> "$GITHUB_STEP_SUMMARY"
             
             # 유저 설정
-            git config user.name "${{ github.actor }}"
-            git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
 
             # 변경분 커밋 & 푸시
             git add "${fixed_list[@]}"
