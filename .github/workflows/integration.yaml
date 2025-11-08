@@ -1,0 +1,56 @@
+name: Integration 🔄
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  pull_request:
+
+jobs:
+  linelint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 줄바꿈 체크
+      - name: Check for missing end line breaks
+        run: |
+          echo "🔍 줄바꿈 검사 시작"
+          echo "기준 커밋: ${{ github.event.pull_request.base.sha }}"
+          echo "현재 커밋: ${{ github.sha }}"
+
+          files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | tr -d '"')
+          target_file_list=()
+
+          echo "📝 변경된 파일 목록:"
+          echo "$files"
+
+          echo "## 줄바꿈 누락 파일" >> $GITHUB_STEP_SUMMARY
+          for file in $files; do
+            echo "검사 중: $file"
+            if [ -s "$file" ] && [ "$(tail -c 1 $file | wc -l)" -eq 0 ]; then
+              printf '\n' >> "$file"
+              echo "✏️ 개행 추가: $file"
+              echo "- $file" >> $GITHUB_STEP_SUMMARY
+              target_file_list+=("$file")
+            else
+              echo "✅ 정상: $file"
+            fi
+          done
+
+          if [ "${#target_file_list[@]}" -gt 0 ]; then
+            echo -e "\n자동 수정된 파일 수: ${#target_file_list[@]}" >> "$GITHUB_STEP_SUMMARY"
+
+            # 변경분 커밋 & 푸시
+            git add "${fixed_list[@]}"
+            git commit -m "chore(ci): add missing trailing newline to files"
+            git push
+
+            echo "✅ 누락된 개행 자동 추가 및 커밋/푸시 완료"
+            exit 1
+          else
+            echo "✅ 모든 파일의 줄바꿈 정상"
+          fi
